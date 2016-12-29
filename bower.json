@@ -1,22 +1,15 @@
 {
   "name": "colour-tools",
-  "description": "",
+  "description": "Colour tools",
   "main": "",
   "authors": [
     "Stephen Cox"
   ],
   "license": "MIT",
   "homepage": "",
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "libraries",
-    "test",
-    "tests"
-  ],
   "dependencies": {
     "jquery": "^3.1.1",
-    "font-awesome": "^4.7.0"
+    "font-awesome": "^4.7.0",
+    "chroma-js": "^1.1.1"
   }
 }
