@@ -14,6 +14,7 @@
     "gulp-autoprefixer": "*",
     "gulp-clean-css": "*",
     "gulp-concat": "^2.6.1",
+    "gulp-css-globbing": "^0.1.9",
     "gulp-exit": "*",
     "gulp-help": "*",
     "gulp-notify": "*",

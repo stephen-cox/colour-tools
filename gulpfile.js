@@ -36,6 +36,7 @@ var sass = require('gulp-sass');
 var sourcemaps = require('gulp-sourcemaps');
 var prefix = require('gulp-autoprefixer');
 var clean = require('gulp-clean-css');
+var globbing = require('gulp-css-globbing');
 
 // JavaScript
 var concat = require('gulp-concat');
@@ -83,6 +84,9 @@ gulp.task('sass-dev', 'Compile SASS for development environment', function () {
     .pipe(plumber({
       errorHandler: onError
     }))
+    .pipe(globbing({
+      extensions: ['.scss']
+    }))
     .pipe(sourcemaps.init())
     .pipe(sass(sass_conf))
     .pipe(prefix(prefix_conf))
@@ -103,6 +107,9 @@ gulp.task('sass-prod', 'Compile SASS for production environment', function () {
     { base: 'sass' })
     .pipe(plumber({
       errorHandler: onError
+    }))
+    .pipe(globbing({
+      extensions: ['.scss']
     }))
     .pipe(sass(sass_conf))
     .pipe(prefix(prefix_conf))
