@@ -43,6 +43,10 @@ var concat = require('gulp-concat');
 var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
 
+// Images
+var svgmin = require('gulp-svgmin');
+var gzip = require('gulp-gzip');
+
 // Nunjucks templating
 var nunjucks = require('gulp-nunjucks-render');
 
@@ -146,7 +150,25 @@ gulp.task('scripts', function() {
     .pipe(gulp.dest('./web/js'))
     .pipe(rename('scripts.min.js'))
     .pipe(uglify())
-    .pipe(gulp.dest('./web/js'));
+    .pipe(gulp.dest('./web/js'))
+      .pipe(bs.stream({match: '**/*.js'}));
+});
+
+/**
+ * Compress SVGs
+ */
+gulp.task('images', function () {
+  return gulp.src('images/**/*.svg')
+    .pipe(plumber({
+      errorHandler: onError
+    }))
+    .pipe(svgmin({
+      plugins: [
+        { removeDoctype: false }
+    ]}))
+//    .pipe(gzip({ append: false }))
+//    .pipe(rename({ extname: '.svgz'}))
+    .pipe(gulp.dest('./web/img'));
 });
 
 /**
@@ -197,6 +219,16 @@ gulp.task('watch-scripts', function() {
 });
 
 /**
+ * Watch images directory for changes.
+ */
+gulp.task('watch-images', function() {
+
+  watch('images/**/*.svg', {verbose: true, usePolling: true, useFsEvents: true}, function() {
+    gulp.start('images');
+  });
+});
+
+/**
  * Watch Nunjucks pages directory for changes.
  */
 gulp.task('watch-pages', function() {
@@ -209,4 +241,4 @@ gulp.task('watch-pages', function() {
 /**
  * Default task - compile and watch SASS, JavaScript and Nunjucks templates
  */
-gulp.task('default', false, ['bs', 'sass-' + env, 'scripts', 'nunjucks', 'watch-sass', 'watch-scripts', 'watch-pages']);
+gulp.task('default', false, ['bs', 'sass-' + env, 'scripts', 'images', 'nunjucks', 'watch-sass', 'watch-scripts', 'watch-images', 'watch-pages']);
