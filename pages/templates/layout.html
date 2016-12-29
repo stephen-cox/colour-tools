@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="description" content="Colour palette tools">
     <meta name="author" content="Stephen Cox">
-    <title>{% block header %}{% endblock %}Colour Tools</title>
+    <title>{% block title %}{% endblock %}Colour Tools</title>
     <link rel="stylesheet" href="css/styles.css">
   </head>
   <body>
-    {% block content %} {% endblock %}
-    <script src="lib/jquery/dist/jquery.min.js"></script>
-    <script src="js/scripts.min.js"></script>
+    {% block content %}{% endblock %}
   </body>
+  <script src="lib/jquery/dist/jquery.min.js"></script>
+  <script src="lib/chroma-js/chroma.min.js"></script>
+  <script src="js/scripts.js"></script>
 </html>
