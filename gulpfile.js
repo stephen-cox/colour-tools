@@ -35,14 +35,18 @@ var watch = require('gulp-watch');
 var sass = require('gulp-sass');
 var sourcemaps = require('gulp-sourcemaps');
 var prefix = require('gulp-autoprefixer');
-var globbing = require('gulp-css-globbing');
 var clean = require('gulp-clean-css');
 
-// Browser Sync
-var bs = require('browser-sync').create();
+// JavaScript
+var concat = require('gulp-concat');
+var rename = require('gulp-rename');
+var uglify = require('gulp-uglify');
 
 // Nunjucks templating
 var nunjucks = require('gulp-nunjucks-render');
+
+// Browser Sync
+var bs = require('browser-sync').create();
 
 
 // Check environment
@@ -100,9 +104,6 @@ gulp.task('sass-prod', 'Compile SASS for production environment', function () {
     .pipe(plumber({
       errorHandler: onError
     }))
-    .pipe(globbing({
-      extensions: ['.scss']
-    }))
     .pipe(sass(sass_conf))
     .pipe(prefix(prefix_conf))
     .pipe(clean({compatibility: 'ie8'}))
@@ -126,14 +127,19 @@ gulp.task('clean-css', 'Delete all the CSS files in the ./web/css directory', fu
 });
 
 /**
- * Set up Browser Sync
+ * Minify and concatenate Javascript files
  */
-gulp.task('bs', 'Set Browser Sync to serve the ./web directory', function() {
-  bs.init({
-    server: {
-      baseDir: "./web/"
-    }
-  });
+gulp.task('scripts', function() {
+
+  return gulp.src('scripts/**/*.js')
+    .pipe(plumber({
+      errorHandler: onError
+    }))
+    .pipe(concat('scripts.js'))
+    .pipe(gulp.dest('./web/js'))
+    .pipe(rename('scripts.min.js'))
+    .pipe(uglify())
+    .pipe(gulp.dest('./web/js'));
 });
 
 /**
@@ -153,12 +159,33 @@ gulp.task('nunjucks', 'Compile Nunjucks templates in the ./pages directory', fun
 });
 
 /**
+ * Set up Browser Sync
+ */
+gulp.task('bs', 'Set Browser Sync to serve the ./web directory', function() {
+  bs.init({
+    server: {
+      baseDir: "./web/"
+    }
+  });
+});
+
+/**
  * Watch SASS directory for changes.
  */
 gulp.task('watch-sass', function() {
 
   watch('sass/**/*.scss', {verbose: true, usePolling: true, useFsEvents: true}, function() {
     gulp.start('sass-' + env);
+  });
+});
+
+/**
+ * Watch JavaScript directory for changes.
+ */
+gulp.task('watch-scripts', function() {
+
+  watch('scripts/**/*.js', {verbose: true, usePolling: true, useFsEvents: true}, function() {
+    gulp.start('scripts');
   });
 });
 
@@ -173,6 +200,6 @@ gulp.task('watch-pages', function() {
 });
 
 /**
- * Default task - compile and watch SASS
+ * Default task - compile and watch SASS, JavaScript and Nunjucks templates
  */
-gulp.task('default', false, ['bs', 'sass-' + env, 'nunjucks', 'watch-sass', 'watch-pages']);
+gulp.task('default', false, ['bs', 'sass-' + env, 'scripts', 'nunjucks', 'watch-sass', 'watch-scripts', 'watch-pages']);
