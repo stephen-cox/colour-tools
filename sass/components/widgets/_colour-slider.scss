@@ -3,10 +3,22 @@
   margin: 10px;
 }
 .slider__range {
+  position: relative;
   width: 50px;
   height: 480px;
   padding: 0;
   margin: 0;
+  border: 1px solid #999;
+}
+.slider__slide {
+  position: absolute;
+  z-index: 1;
+  width: 54px;
+  height: 8px;
+  left: -6px;
+  top: 245px;
+  border: 4px solid #999;
+  border-radius: 8px;
 }
 .slider__value {
   width: 38px;
