@@ -40,6 +40,7 @@ var globbing = require('gulp-css-globbing');
 
 // JavaScript
 var concat = require('gulp-concat');
+var babel = require('gulp-babel');
 var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
 
@@ -138,7 +139,7 @@ gulp.task('clean-css', 'Delete all the CSS files in the ./web/css directory', fu
 });
 
 /**
- * Minify and concatenate Javascript files
+ * Transpile, minify and concatenate Javascript files
  */
 gulp.task('scripts', function() {
 
@@ -146,12 +147,13 @@ gulp.task('scripts', function() {
     .pipe(plumber({
       errorHandler: onError
     }))
+    .pipe(babel({ presets: ['es2015'] }))
     .pipe(concat('scripts.js'))
     .pipe(gulp.dest('./web/js'))
     .pipe(rename('scripts.min.js'))
     .pipe(uglify())
     .pipe(gulp.dest('./web/js'))
-      .pipe(bs.stream({match: '**/*.js'}));
+    .pipe(bs.stream({match: '**/*.js'}));
 });
 
 /**

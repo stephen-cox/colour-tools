@@ -3,6 +3,8 @@
  */
 (function ( $ ) {
 
+  var dragging = false;
+
   /**
    * colour_slider plugin definition
    */
@@ -18,9 +20,7 @@
       max: 100,
       decimal_places: 0,
       value: null,
-      update: function(value, colour) {
-        this.val(value, false);
-      }
+      update: function(colour) { }
     };
 
     /**
@@ -38,6 +38,12 @@
         var position = ui.offset.top + slide.outerHeight() / 2;
         var value = opts.max + opts.min - (opts.max - opts.min) * position / range.height();
         plugin.val(value);
+      },
+      start: function() {
+        dragging = true;
+      },
+      stop: function() {
+        dragging = false;
       }
     });
 
@@ -67,6 +73,9 @@
         if (trigger_events === undefined) {
           trigger_events = true;
         }
+        if (isNaN(value)) {
+          value = plugin.value;
+        }
         if (value < opts.min || value > opts.max) {
           throw 'Colour slider value out of range';
         }
@@ -75,7 +84,7 @@
           input.val(plugin.value);
           set_slide();
           if (trigger_events) {
-            plugin.trigger('colour-change');
+            plugin.trigger('slider-change');
           }
         }
         return plugin;
@@ -88,9 +97,9 @@
     /**
      * Update the slider
      */
-    plugin.update = function(value, colour) {
+    plugin.update = function(colour) {
       if (typeof opts.update == 'function') {
-        opts.update.call(this, value, colour);
+        opts.update.call(this, colour);
       }
     };
 
@@ -111,13 +120,14 @@
     /**
      * Set the slide position
      */
-    var set_slide = function(animate) {
+    var set_slide = function() {
       var position = (opts.max + opts.min - plugin.val()) * range.height() / (opts.max - opts.min);
-      if (animate) {
-        slide.animate({'top': position - slide.outerHeight() / 2});
+      console.log(dragging);
+      if (dragging) {
+        slide.css({'top': position - slide.outerHeight() / 2});
       }
       else {
-        slide.css({'top': position - slide.outerHeight() / 2});
+        slide.animate({'top': position - slide.outerHeight() / 2});
       }
     };
 
