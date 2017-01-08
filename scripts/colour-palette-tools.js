@@ -1,4 +1,10 @@
 /**
+ * Colour palette tools
+ */
+
+/* global chroma */
+
+/**
  * ColourElement class
  */
 class ColourElement {
@@ -6,12 +12,6 @@ class ColourElement {
   constructor(selector) {
     this._selector = selector;
     this._element = $(selector);
-  }
-
-  /**
-   * Fire any change events
-   */
-  change() {
   }
 
   /**
@@ -32,51 +32,56 @@ class ColourSlider extends ColourElement {
     super(selector);
 
     // Set options
-    let defaults = {
+    const defaults = {
       min: 0,
       max: 100,
       decimal_places: 0,
       value: null,
-      update: function(colour) { }
+      update(colour) { },
     };
     this.options = $.extend({}, defaults, options);
 
     // Set slider elements
-    this._range = this.element.find('.js-slider-range');
-    this._input = this.element.find('.js-slider-value');
-    this._slide = this.element.find('.js-slider-slide');
+    this._range = $('<div />')
+      .attr('class', '.js-slider-range slider__range');
+    this.element.append(this._range);
+    this._slide = $('<div />')
+        .attr('class', '.js-slider-slide slider__slide');
+    this._range.append(this._slide);
+    this._input = $('<input />')
+        .attr('type', 'text')
+        .attr('class', '.js-slider-value slider__value');
+    this.element.append(this._input);
 
     // Set the slider value
     if (this.options.value == null) {
       this.value = this.options.min;
-    }
-    else {
+    } else {
       this.value = this.options.value;
     }
 
     // Add events
-    let slider = this;
-    this._range.click(function(e) {
-      let offset =  $(this).parent().offset();
-      slider.value = slider.calc_value(e.pageY - offset.top);
+    this._range.click((e) => {
+      const offset = $(this).parent().offset();
+      this.value = this.calc_value(e.pageY - offset.top);
     });
-    this._input.change(function(e) {
-      slider.value = parseInt(slider._input.val());
+    this._input.change(() => {
+      this.value = parseInt(this._input.val());
     });
 
     // Add dragging
     this._slide.udraggable({
-      axis: "y",
+      axis: 'y',
       containment: [-6, -8, 70, 471],
-      drag: function(e, ui) {
-        slider.value = slider.calc_value(ui.offset.top + slider._slide.outerHeight() / 2);
+      drag: (e, ui) => {
+        this.value = this.calc_value(ui.offset.top + (this._slide.outerHeight() / 2));
       },
-      start: function() {
-        slider.dragging = true;
+      start: () => {
+        ColourSlider.Dragging = true;
       },
-      stop: function() {
-        slider.dragging = false;
-      }
+      stop: () => {
+        ColourSlider.Dragging = false;
+      },
     });
   }
 
@@ -104,29 +109,28 @@ class ColourSlider extends ColourElement {
   /**
    * Set slider value
    */
-  set_value(value, trigger_events=true) {
-    if (typeof value == 'number') {
+  set_value(value, trigger_events = true) {
+    let val = value;
+
+    if (typeof value === 'number') {
       if (isNaN(value)) {
-        value = this._value;
-      }
-      else if (value < this.options.min) {
-        value = this.options.min;
-      }
-      else if (value > this.options.max) {
-        value = this.options.max;
+        val = this._value;
+      } else if (value < this.options.min) {
+        val = this.options.min;
+      } else if (value > this.options.max) {
+        val = this.options.max;
       }
 
-      if (this.value != value) {
-        this._value = value.toFixed(this.options.decimal_places);
+      if (this.value !== val) {
+        this._value = val.toFixed(this.options.decimal_places);
         this._input.val(this.value);
         this.set_slide();
         if (trigger_events) {
           this.change();
         }
       }
-    }
-    else {
-      throw 'Colour slider value not a number';
+    } else {
+      throw new Error('Colour slider value not a number');
     }
   }
 
@@ -134,21 +138,23 @@ class ColourSlider extends ColourElement {
    * Calculate value
    */
   calc_value(position) {
-    return this.options.max + this.options.min - (this.options.max - this.options.min) * position / this._range.height();
+    const range = this.options.max - this.options.min;
+    return this.options.max + this.options.min - (range * position / this._range.height());
   }
 
   /**
    * Calculate position
    */
   calc_position(value) {
-    return (this.options.max + this.options.min - value) * this._range.height() / (this.options.max - this.options.min);
+    const range = this.options.max - this.options.min;
+    return (this.options.max + this.options.min - value) * this._range.height() / range;
   }
 
   /**
    * Update the slider
    */
   update(colour) {
-    if (typeof this.options.update == 'function') {
+    if (typeof this.options.update === 'function') {
       this.options.update.call(this, colour);
     }
   }
@@ -171,39 +177,17 @@ class ColourSlider extends ColourElement {
    * Set the slide position
    */
   set_slide() {
-    let position = this.calc_position(this.value);
-    if (this.dragging) {
-      this._slide.css({'top': position - this._slide.outerHeight() / 2});
+    const position = this.calc_position(this.value);
+    if (ColourSlider.Dragging) {
+      this._slide.css({ top: position - this._slide.outerHeight() / 2 });
+    } else {
+      this._slide.animate({ top: position - this._slide.outerHeight() / 2 });
     }
-    else {
-      this._slide.animate({'top': position - this._slide.outerHeight() / 2});
-    }
-  }
-
-  /**
-   * Fire change event
-   */
-  change() {
-    this.element.trigger('slider-change');
-  }
-
-  /**
-   * Get dragging class variable
-   */
-  get dragging() {
-    return ColourSlider.Dragging;
-  }
-
-  /**
-   * Set dragging class variable
-   */
-  set dragging(drag) {
-    ColourSlider.Dragging = drag;
   }
 }
 
 /**
- * ColourSlider class variable
+ * ColourSlider Dragging class variable
  */
 ColourSlider.Dragging = false;
 
@@ -277,123 +261,133 @@ class ColourSwatch extends ColourElement {
 }
 
 /**
+ * ColourStats class
+ */
+class ColourStats extends ColourElement {
+
+  constructor(selector) {
+    super(selector);
+    
+    this._hex = $('<input />')
+        .attr('type', 'text')
+        .attr('class', '.js-colour-stats-hex stats__hex');
+    this.element.append(this._hex);
+  }
+}
+
+
+/**
  * Main colour palette routine
  */
 if ($('#colour-palette-tools').length > 0) {
-
-  $(function() {
-
+  $(() => {
+    let colour;
     try {
-      var colour = chroma(window.location.hash);
-    }
-    catch(err) {
-      var colour = chroma('cyan');
+      colour = chroma(window.location.hash);
+    } catch (err) {
+      colour = chroma('cyan');
     }
 
-    var colour_block = new ColourSwatch('.js-colour-block', colour);
-    var hue =new ColourSlider('.js-slider-hue', {
+    const colour_block = new ColourSwatch('.js-colour-block', colour);
+    const hue = new ColourSlider('.js-slider-hue', {
       max: 360,
       decimal_places: 4,
       value: colour.get('hsl.h'),
-      update: function(colour) {
-        this.set_value(colour.get('hsl.h'), false);
-        this.set_slide_colour(colour.hex());
-        let c = chroma(colour.hex());
+      update(color) {
+        this.set_value(color.get('hsl.h'), false);
+        this.set_slide_colour(color.hex());
+        const c = chroma(color.hex());
         let gradient = 'linear-gradient(0deg';
-        for (let i = 0; i <= 361; i++) {
-          gradient += ' ,' + c.set('hsl.h', i).hex();
+        for (let i = 0; i <= 361; i += 1) {
+          gradient += ` , ${c.set('hsl.h', i).hex()}`;
         }
         gradient += ')';
         this.set_range_colour(gradient);
-      }
+      },
     });
-    var saturation = new ColourSlider('.js-slider-saturation', {
+    const saturation = new ColourSlider('.js-slider-saturation', {
       value: 100 * colour.get('hsl.s'),
       decimal_places: 4,
-      update: function(colour) {
-        this.set_value(100 * colour.get('hsl.s'), false);
-        this.set_slide_colour(colour.hex());
-        let c = chroma(colour.hex());
-        this.set_range_colour('linear-gradient(180deg, '+c.set('hsl.s', 1).hex()+', '+c.set('hsl.s', 0).hex()+')');
-      }
+      update(color) {
+        this.set_value(100 * color.get('hsl.s'), false);
+        this.set_slide_colour(color.hex());
+        const c = chroma(color.hex());
+        this.set_range_colour(`linear-gradient(180deg, ${c.set('hsl.s', 1).hex()}, ${c.set('hsl.s', 0).hex()})`);
+      },
     });
-    var luminosity = new ColourSlider('.js-slider-luminosity', {
+    const luminosity = new ColourSlider('.js-slider-luminosity', {
       value: 100 * colour.get('hsl.l'),
       decimal_places: 4,
-      update: function(colour) {
-        this.set_value(100 * colour.get('hsl.l'), false);
-        this.set_slide_colour(colour.hex());
-        var h = colour.get('hsl.h');
-        var s = 100 * colour.get('hsl.s');
-        var l = 100 * colour.get('hsl.l');
-        this.set_range_colour('linear-gradient(180deg, hsl('+h+', '+s+'%, 100%), hsl('+h+', '+s+'%, 50%), hsl('+h+', '+s+'%, 0%))');
-      }
+      update(color) {
+        this.set_value(100 * color.get('hsl.l'), false);
+        this.set_slide_colour(color.hex());
+        const h = color.get('hsl.h');
+        const s = 100 * color.get('hsl.s');
+        const l = 100 * color.get('hsl.l');
+        this.set_range_colour(`linear-gradient(180deg, hsl(${h}, ${s}%, 100%), hsl(${h}, ${s}%, 50%), hsl(${h}, ${s}%, 0%))`);
+      },
     });
-    var red = new ColourSlider('.js-slider-red', {
+    const red = new ColourSlider('.js-slider-red', {
       max: 255,
       value: colour.get('rgb.r'),
-      update: function(colour) {
-        this.set_value(parseInt(colour.get('rgb.r')), false);
-        this.set_slide_colour(colour.hex());
-        let c = chroma(colour.hex());
-        this.set_range_colour('linear-gradient(180deg, '+c.set('rgb.r', 255).hex()+', '+c.set('rgb.r', 0).hex()+')');
-      }
+      update(color) {
+        this.set_value(parseInt(color.get('rgb.r')), false);
+        this.set_slide_colour(color.hex());
+        const c = chroma(color.hex());
+        this.set_range_colour(`linear-gradient(180deg, ${c.set('rgb.r', 255).hex()}, ${c.set('rgb.r', 0).hex()})`);
+      },
     });
-    var green = new ColourSlider('.js-slider-green', {
+    const green = new ColourSlider('.js-slider-green', {
       max: 255,
       value: colour.get('rgb.g'),
-      update: function(colour) {
-        this.set_value(parseInt(colour.get('rgb.g')), false);
-        this.set_slide_colour(colour.hex());
-        let c = chroma(colour.hex());
-        this.set_range_colour('linear-gradient(180deg, '+c.set('rgb.g', 255).hex()+', '+c.set('rgb.g', 0).hex()+')');
-      }
+      update(color) {
+        this.set_value(parseInt(color.get('rgb.g')), false);
+        this.set_slide_colour(color.hex());
+        const c = chroma(color.hex());
+        this.set_range_colour(`linear-gradient(180deg, ${c.set('rgb.g', 255).hex()}, ${c.set('rgb.g', 0).hex()})`);
+      },
     });
-    var blue = new ColourSlider('.js-slider-blue', {
+    const blue = new ColourSlider('.js-slider-blue', {
       max: 255,
       value: colour.get('rgb.b'),
-      update: function(colour) {
-        this.set_value(parseInt(colour.get('rgb.b')), false);
-        this.set_slide_colour(colour.hex());
-        let c = chroma(colour.hex());
-        this.set_range_colour('linear-gradient(180deg, '+c.set('rgb.b', 255).hex()+', '+c.set('rgb.b', 0).hex()+')');
-      }
+      update(color) {
+        this.set_value(parseInt(color.get('rgb.b')), false);
+        this.set_slide_colour(color.hex());
+        const c = chroma(color.hex());
+        this.set_range_colour(`linear-gradient(180deg, ${c.set('rgb.b', 255).hex()}, ${c.set('rgb.b', 0).hex()})`);
+      },
     });
-    var hex_text = $('.js-colour-details-hex');
-    var hsl_text = $('.js-colour-details-hsl');
-    var rgb_text = $('.js-colour-details-rgb');
+    const stats = new ColourStats('.js-colour-stats');
 
     // Bind swatch-change event
-    colour_block.element.on('swatch-change', function(event) {
+    colour_block.element.on('swatch-change', () => {
       hue.update(colour_block.chroma);
       saturation.update(colour_block.chroma);
       luminosity.update(colour_block.chroma);
       red.update(colour_block.chroma);
       green.update(colour_block.chroma);
       blue.update(colour_block.chroma);
-      hex_text.text(colour_block.chroma.hex());
-      hsl_text.text(colour_block.chroma.css('hsl'));
-      rgb_text.text(colour_block.chroma.css());
+      stats.value = colour_block.chroma;
     });
     colour_block.change();
 
     // Bind slider-change events
-    hue.element.on('slider-change', function(event) {
+    hue.element.on('slider-change', () => {
       colour_block.hsl(hue.value, saturation.value / 100, luminosity.value / 100);
     });
-    saturation.element.on('slider-change', function(event) {
+    saturation.element.on('slider-change', () => {
       colour_block.hsl(hue.value, saturation.value / 100, luminosity.value / 100);
     });
-    luminosity.element.on('slider-change', function(event) {
+    luminosity.element.on('slider-change', () => {
       colour_block.hsl(hue.value, saturation.value / 100, luminosity.value / 100);
     });
-    red.element.on('slider-change', function(event) {
+    red.element.on('slider-change', () => {
       colour_block.rgb(red.value, green.value, blue.value);
     });
-    green.element.on('slider-change', function(event) {
+    green.element.on('slider-change', () => {
       colour_block.rgb(red.value, green.value, blue.value);
     });
-    blue.element.on('slider-change', function(event) {
+    blue.element.on('slider-change', () => {
       colour_block.rgb(red.value, green.value, blue.value);
     });
   });

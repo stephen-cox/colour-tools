@@ -1,0 +1,15 @@
+{
+  "env": {
+    "browser": true,
+    "jquery": true
+  },
+  "extends": "airbnb",
+  "rules": {
+    "no-underscore-dangle": "off",
+    "no-unused-vars": "off",
+    "radix": ["error", "as-needed"],
+    "camelcase": "off",
+    "no-mixed-operators": "off"
+  }
+}
+
