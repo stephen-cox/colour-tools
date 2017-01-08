@@ -4,17 +4,45 @@
     <h1>Colour Palette Tools</h1>
     <div id="colour-palette-tools">
       <div class="js-colour-block colour-block"></div>
-      <div class="js-colour-stats colour-stats"></div>
-      <div class="colour-details">
-        <div class="js-colour-details-hex"></div>
-        <div class="js-colour-details-hsl"></div>
-        <div class="js-colour-details-rgb"></div>
+      <div class="js-colour-stats colour-stats">
+        <div class="colour-stats__hex">
+          <h2>Hex</h2>
+          <input type="text" class="js-colour-stats-hex colour-stats__input" value="" />
+        </div>
+        <div class="colour-stats__hsl">
+          <h2>HSL</h2>
+          <h3>H</h3>
+          <input type="text" class="js-colour-stats-hsl-h colour-stats__input" value="" />
+          <h3>S</h3>
+          <input type="text" class="js-colour-stats-hsl-s colour-stats__input" value="" />
+          <h3>L</h3>
+          <input type="text" class="js-colour-stats-hsl-l colour-stats__input" value="" />
+          <h3>CSS</h3>
+          <span class="js-colour-stats-hsl-css"></span>
+        </div>
+        <div class="colour-stats__rgb">
+          <h2>RGB</h2>
+          <h3>R</h3>
+          <input type="text" class="js-colour-stats-rgb-r colour-stats__input" value="" />
+          <h3>G</h3>
+          <input type="text" class="js-colour-stats-rgb-g colour-stats__input" value="" />
+          <h3>B</h3>
+          <input type="text" class="js-colour-stats-rgb-b colour-stats__input" value="" />
+          <h3>CSS</h3>
+          <span class="js-colour-stats-rgb-css"></span>
+        </div>
       </div>
-      <div class="js-slider-hue slider slider__hue"></div>
-      <div class="js-slider-saturation slider slider__saturation"></div>
-      <div class="js-slider-luminosity slider slider__luminosity"></div>
-      <div class="js-slider-red slider slider__red"></div>
-      <div class="js-slider-green slider slider__green"></div>
-      <div class="js-slider-blue slider slider__blue"></div>
+      <div class="sliders">
+        <div class="sliders__hsl">
+          <div class="js-slider-hue slider slider__hue"></div>
+          <div class="js-slider-saturation slider slider__saturation"></div>
+          <div class="js-slider-luminosity slider slider__luminosity"></div>
+        </div>
+        <div class="sliders__rgb">
+          <div class="js-slider-red slider slider__red"></div>
+          <div class="js-slider-green slider slider__green"></div>
+          <div class="js-slider-blue slider slider__blue"></div>
+        </div>
+      </div>
     </div>
 {% endblock %}

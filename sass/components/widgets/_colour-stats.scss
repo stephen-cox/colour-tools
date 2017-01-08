@@ -1,0 +1,39 @@
+.colour-stats {
+  margin: 1em;
+  h2 {
+    clear: left;
+    margin: 0.5em 0;
+  }
+  h3 {
+    float: left;
+    margin: 0 0.25em 0 0;
+  }
+  .colour-stats__input {
+    float: left;
+    margin-right: 1em;
+    text-align: center;
+  }
+  .colour-stats__hex {
+    @include clearfix;
+    .colour-stats__input {
+      width: 5em;
+    }
+  }
+  .colour-stats__hsl {
+    @include clearfix;
+    .colour-stats__input {
+      width: 3em;
+    }
+    h3 {
+      &:last-child {
+        clear: left;
+      }
+    }
+  }
+  .colour-stats__rgb {
+    @include clearfix;
+    .colour-stats__input {
+      width: 2em;
+    }
+  }
+}

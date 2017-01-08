@@ -26,11 +26,21 @@ var ColourElement = function () {
   }
 
   /**
-   * Get the element
+   * Fire change event
    */
 
 
   _createClass(ColourElement, [{
+    key: 'change',
+    value: function change() {
+      this.element.trigger('element-change');
+    }
+
+    /**
+     * Get the element
+     */
+
+  }, {
     key: 'element',
     get: function get() {
       return this._element;
@@ -80,7 +90,7 @@ var ColourSlider = function (_ColourElement) {
 
     // Add events
     _this._range.click(function (e) {
-      var offset = $(_this).parent().offset();
+      var offset = _this._range.parent().offset();
       _this.value = _this.calc_value(e.pageY - offset.top);
     });
     _this._input.change(function () {
@@ -90,7 +100,7 @@ var ColourSlider = function (_ColourElement) {
     // Add dragging
     _this._slide.udraggable({
       axis: 'y',
-      containment: [-6, -8, 70, 471],
+      containment: [-6, -8, 70, 472],
       drag: function drag(e, ui) {
         _this.value = _this.calc_value(ui.offset.top + _this._slide.outerHeight() / 2);
       },
@@ -353,15 +363,82 @@ var ColourSwatch = function (_ColourElement2) {
 var ColourStats = function (_ColourElement3) {
   _inherits(ColourStats, _ColourElement3);
 
-  function ColourStats(selector) {
+  function ColourStats(selector, colour) {
     _classCallCheck(this, ColourStats);
 
     var _this3 = _possibleConstructorReturn(this, (ColourStats.__proto__ || Object.getPrototypeOf(ColourStats)).call(this, selector));
 
-    _this3._hex = $('<input />').attr('type', 'text').attr('class', '.js-colour-stats-hex stats__hex');
-    _this3.element.append(_this3._hex);
+    _this3._colour = null;
+
+    // Add stats elements
+    _this3._hex = $('.js-colour-stats-hex');
+    _this3._hsl_h = $('.js-colour-stats-hsl-h');
+    _this3._hsl_s = $('.js-colour-stats-hsl-s');
+    _this3._hsl_l = $('.js-colour-stats-hsl-l');
+    _this3._hsl_css = $('.js-colour-stats-hsl-css');
+    _this3._rgb_r = $('.js-colour-stats-rgb-r');
+    _this3._rgb_g = $('.js-colour-stats-rgb-g');
+    _this3._rgb_b = $('.js-colour-stats-rgb-b');
+    _this3._rgb_css = $('.js-colour-stats-rgb-css');
+
+    // Set the colour
+    _this3.set_colour(colour, false);
     return _this3;
   }
+
+  /**
+   * Fire change event
+   */
+
+
+  _createClass(ColourStats, [{
+    key: 'change',
+    value: function change() {
+      this.element.trigger('stats-change');
+    }
+
+    /**
+     * Get colour
+     */
+
+  }, {
+    key: 'set_colour',
+
+
+    /**
+     * Set colour
+     */
+    value: function set_colour(colour, trigger_events) {
+      if (this.colour === null || this.colour.hex() !== colour.hex()) {
+        this._colour = colour;
+        this._hex.val(this.colour.hex());
+        this._hsl_h.val(this.colour.get('hsl.h'));
+        this._hsl_s.val(this.colour.get('hsl.s'));
+        this._hsl_l.val(this.colour.get('hsl.s'));
+        this._hsl_css.html(this.colour.css('hsl'));
+        this._rgb_r.val(this.colour.get('rgb.r'));
+        this._rgb_g.val(this.colour.get('rgb.g'));
+        this._rgb_b.val(this.colour.get('rgb.b'));
+        this._rgb_css.html(this.colour.css());
+        if (trigger_events) {
+          this.change();
+        }
+      }
+    }
+  }, {
+    key: 'colour',
+    get: function get() {
+      return this._colour;
+    }
+
+    /**
+     * Set colour and trigger change event
+     */
+    ,
+    set: function set(colour) {
+      this.set_colour(colour, true);
+    }
+  }]);
 
   return ColourStats;
 }(ColourElement);
@@ -449,7 +526,7 @@ if ($('#colour-palette-tools').length > 0) {
         this.set_range_colour('linear-gradient(180deg, ' + c.set('rgb.b', 255).hex() + ', ' + c.set('rgb.b', 0).hex() + ')');
       }
     });
-    var stats = new ColourStats('.js-colour-stats');
+    var stats = new ColourStats('.js-colour-stats', colour);
 
     // Bind swatch-change event
     colour_block.element.on('swatch-change', function () {
@@ -459,7 +536,7 @@ if ($('#colour-palette-tools').length > 0) {
       red.update(colour_block.chroma);
       green.update(colour_block.chroma);
       blue.update(colour_block.chroma);
-      stats.value = colour_block.chroma;
+      stats.colour = colour_block.chroma;
     });
     colour_block.change();
 

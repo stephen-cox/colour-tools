@@ -15,6 +15,13 @@ class ColourElement {
   }
 
   /**
+   * Fire change event
+   */
+  change() {
+    this.element.trigger('element-change');
+  }
+
+  /**
    * Get the element
    */
   get element() {
@@ -62,7 +69,7 @@ class ColourSlider extends ColourElement {
 
     // Add events
     this._range.click((e) => {
-      const offset = $(this).parent().offset();
+      const offset = this._range.parent().offset();
       this.value = this.calc_value(e.pageY - offset.top);
     });
     this._input.change(() => {
@@ -72,7 +79,7 @@ class ColourSlider extends ColourElement {
     // Add dragging
     this._slide.udraggable({
       axis: 'y',
-      containment: [-6, -8, 70, 471],
+      containment: [-6, -8, 70, 472],
       drag: (e, ui) => {
         this.value = this.calc_value(ui.offset.top + (this._slide.outerHeight() / 2));
       },
@@ -265,13 +272,65 @@ class ColourSwatch extends ColourElement {
  */
 class ColourStats extends ColourElement {
 
-  constructor(selector) {
+  constructor(selector, colour) {
     super(selector);
-    
-    this._hex = $('<input />')
-        .attr('type', 'text')
-        .attr('class', '.js-colour-stats-hex stats__hex');
-    this.element.append(this._hex);
+    this._colour = null;
+
+    // Add stats elements
+    this._hex = $('.js-colour-stats-hex');
+    this._hsl_h = $('.js-colour-stats-hsl-h');
+    this._hsl_s = $('.js-colour-stats-hsl-s');
+    this._hsl_l = $('.js-colour-stats-hsl-l');
+    this._hsl_css = $('.js-colour-stats-hsl-css');
+    this._rgb_r = $('.js-colour-stats-rgb-r');
+    this._rgb_g = $('.js-colour-stats-rgb-g');
+    this._rgb_b = $('.js-colour-stats-rgb-b');
+    this._rgb_css = $('.js-colour-stats-rgb-css');
+
+    // Set the colour
+    this.set_colour(colour, false);
+  }
+
+  /**
+   * Fire change event
+   */
+  change() {
+    this.element.trigger('stats-change');
+  }
+
+  /**
+   * Get colour
+   */
+  get colour() {
+    return this._colour;
+  }
+
+  /**
+   * Set colour and trigger change event
+   */
+  set colour(colour) {
+    this.set_colour(colour, true);
+  }
+
+  /**
+   * Set colour
+   */
+  set_colour(colour, trigger_events) {
+    if (this.colour === null || this.colour.hex() !== colour.hex()) {
+      this._colour = colour;
+      this._hex.val(this.colour.hex());
+      this._hsl_h.val(this.colour.get('hsl.h'));
+      this._hsl_s.val(this.colour.get('hsl.s'));
+      this._hsl_l.val(this.colour.get('hsl.s'));
+      this._hsl_css.html(this.colour.css('hsl'));
+      this._rgb_r.val(this.colour.get('rgb.r'));
+      this._rgb_g.val(this.colour.get('rgb.g'));
+      this._rgb_b.val(this.colour.get('rgb.b'));
+      this._rgb_css.html(this.colour.css());
+      if (trigger_events) {
+        this.change();
+      }
+    }
   }
 }
 
@@ -357,7 +416,7 @@ if ($('#colour-palette-tools').length > 0) {
         this.set_range_colour(`linear-gradient(180deg, ${c.set('rgb.b', 255).hex()}, ${c.set('rgb.b', 0).hex()})`);
       },
     });
-    const stats = new ColourStats('.js-colour-stats');
+    const stats = new ColourStats('.js-colour-stats', colour);
 
     // Bind swatch-change event
     colour_block.element.on('swatch-change', () => {
@@ -367,7 +426,7 @@ if ($('#colour-palette-tools').length > 0) {
       red.update(colour_block.chroma);
       green.update(colour_block.chroma);
       blue.update(colour_block.chroma);
-      stats.value = colour_block.chroma;
+      stats.colour = colour_block.chroma;
     });
     colour_block.change();
 
