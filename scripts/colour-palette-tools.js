@@ -321,7 +321,7 @@ class ColourStats extends ColourElement {
       this._hex.val(this.colour.hex());
       this._hsl_h.val(this.colour.get('hsl.h'));
       this._hsl_s.val(this.colour.get('hsl.s'));
-      this._hsl_l.val(this.colour.get('hsl.s'));
+      this._hsl_l.val(this.colour.get('hsl.l'));
       this._hsl_css.html(this.colour.css('hsl'));
       this._rgb_r.val(this.colour.get('rgb.r'));
       this._rgb_g.val(this.colour.get('rgb.g'));
