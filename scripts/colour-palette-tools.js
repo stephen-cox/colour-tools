@@ -2,7 +2,15 @@
  * Colour palette tools
  */
 
-/* global chroma */
+/**
+ * Colour class
+ */
+class Colour {
+
+
+
+}
+
 
 /**
  * ColourElement class

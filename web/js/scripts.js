@@ -12,11 +12,18 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * Colour palette tools
  */
 
-/* global chroma */
+/**
+ * Colour class
+ */
+var Colour = function Colour() {
+  _classCallCheck(this, Colour);
+};
 
 /**
  * ColourElement class
  */
+
+
 var ColourElement = function () {
   function ColourElement(selector) {
     _classCallCheck(this, ColourElement);

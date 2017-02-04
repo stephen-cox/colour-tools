@@ -97,7 +97,7 @@ gulp.task('sass-dev', 'Compile SASS for development environment', () => {
     .pipe(prefix(prefix_conf))
     .pipe(sourcemaps.write())
     .pipe(gulp.dest('./web/css'))
-    .pipe(bs.stream({match: '**/*.css'}));
+    .pipe(bs.stream({ match: '**/*.css' }));
 });
 
 /**
@@ -143,14 +143,16 @@ gulp.task('clean-css', 'Delete all the CSS files in the ./web/css directory', ()
 gulp.task('scripts', () => {
 
   return gulp.src('scripts/**/*.js')
+    .pipe(sourcemaps.init())
     .pipe(plumber({
       errorHandler: onError,
     }))
-    .pipe(babel({ presets: ['es2015'] }))
+    .pipe(babel())
     .pipe(concat('scripts.js'))
     .pipe(gulp.dest('./web/js'))
     .pipe(rename('scripts.min.js'))
     .pipe(uglify())
+    .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest('./web/js'))
     .pipe(bs.stream({ match: '**/*.js' }));
 });
@@ -195,6 +197,7 @@ gulp.task('bs', 'Set Browser Sync to serve the ./web directory', () => {
     server: {
       baseDir: './web/',
     },
+    open: false,
   });
 });
 
