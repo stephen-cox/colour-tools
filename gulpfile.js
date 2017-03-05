@@ -23,7 +23,7 @@ const prefix_conf = {
  * Load plugins
  */
 
-// Gulp / Node utilities
+// Gulp and utilities
 const gulp = require('gulp-help')(require('gulp'));
 const u = require('gulp-util');
 const log = u.log;
@@ -64,6 +64,10 @@ const bs = require('browser-sync').create();
 let env = 'dev';
 if (argv.production) {
   env = 'prod';
+  sass_conf.outputStyle = 'compressed';
+}
+function is_dev() {
+  return env === 'dev';
 }
 
 /**
@@ -91,51 +95,29 @@ function onError(err) {
      });
  }
 
-/**
- * Compile SASS for development environment
- */
-gulp.task('sass-dev', 'Compile SASS for development environment', () => {
+ /**
+  * Compile SASS
+  */
+ gulp.task('sass', 'Compile SASS', () => {
 
-  return gulp.src([
-      'sass/**/*.scss',
-    ],
-    { base: 'sass' })
-    .pipe(plumber({
-      errorHandler: onError,
-    }))
-    .pipe(globbing({
-      extensions: ['.scss'],
-    }))
-    .pipe(sourcemaps.init())
-    .pipe(sass(sass_conf))
-    .pipe(prefix(prefix_conf))
-    .pipe(sourcemaps.write())
-    .pipe(gulp.dest('./web/css'))
-    .pipe(bs.stream({match: '**/*.css'}));
-});
-
-/**
- * Compile SASS for production environment
- */
-gulp.task('sass-prod', 'Compile SASS for production environment', () => {
-
-  sass_conf.outputStyle = 'compressed';
-  return gulp.src([
-      'sass/**/*.scss',
-    ],
-    { base: 'sass' })
-    .pipe(plumber({
-      errorHandler: onError,
-    }))
-    .pipe(globbing({
-      extensions: ['.scss'],
-    }))
-    .pipe(sass(sass_conf))
-    .pipe(prefix(prefix_conf))
-    .pipe(clean({ compatibility: 'ie8' }))
-    .pipe(gulp.dest('./web/css'))
-    .pipe(bs.stream({ match: '**/*.css' }));
-});
+   return gulp.src([
+       'sass/**/*.scss',
+     ],
+     { base: 'sass' })
+     .pipe(plumber({
+       errorHandler: onError,
+     }))
+     .pipe(globbing({
+       extensions: ['.scss'],
+     }))
+     .pipe(gulpif(is_dev, sourcemaps.init()))
+     .pipe(sass(sass_conf))
+     .pipe(prefix(prefix_conf))
+     .pipe(gulpif(!is_dev, uglify()))
+     .pipe(gulpif(is_dev, sourcemaps.write()))
+     .pipe(gulp.dest('./web/css'))
+     .pipe(bs.stream({match: '**/*.css'}));
+ });
 
 /**
  * Delete compiled CSS
@@ -167,6 +149,7 @@ gulp.task('scripts', () => {
 
   const tasks = dirs.map((dir) => {
     return gulp.src(path.join('scripts', dir, '/**/*.js'))
+      .pipe(gulpif(is_dev, sourcemaps.init()))
       .pipe(plumber({
         errorHandler: onError,
       }))
@@ -175,10 +158,12 @@ gulp.task('scripts', () => {
       .pipe(gulpif(is_sw(dir), gulp.dest('./web'), gulp.dest('./web/js')))
       .pipe(uglify())
       .pipe(rename(dir + '.min.js'))
+      .pipe(gulpif(is_dev, sourcemaps.write()))
       .pipe(gulpif(is_sw(dir), gulp.dest('./web'), gulp.dest('./web/js')))
    });
 
   const root = gulp.src('scripts/*.js')
+    .pipe(gulpif(is_dev, sourcemaps.init()))
     .pipe(plumber({
       errorHandler: onError,
     }))
@@ -187,6 +172,7 @@ gulp.task('scripts', () => {
     .pipe(gulp.dest('./web/js'))
     .pipe(rename('scripts.min.js'))
     .pipe(uglify())
+    .pipe(gulpif(is_dev, sourcemaps.write()))
     .pipe(gulp.dest('./web/js'));
 
   return merge(tasks, root)
@@ -279,4 +265,4 @@ gulp.task('watch-pages', () => {
 /**
  * Default task - compile and watch SASS, JavaScript and Nunjucks templates
  */
-gulp.task('default', false, ['bs', 'scripts', 'images', 'nunjucks', `sass-${env}`, 'watch-scripts', 'watch-images', 'watch-pages', 'watch-sass']);
+gulp.task('default', false, ['bs', 'scripts', 'images', 'nunjucks', 'sass', 'watch-scripts', 'watch-images', 'watch-pages', 'watch-sass']);
