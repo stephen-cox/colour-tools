@@ -3,17 +3,25 @@
  */
 
 /**
-* Install service worker
-*/
+ * Install service worker
+ */
 self.addEventListener('install', (event) => {
- console.log('SW: Install');
+  console.log('SW: Install');
 });
 
 /**
-* Fetch resource
-*/
+ * Fetch resource
+ */
 self.addEventListener('fetch', (event) => {
   console.log('SW: Fetch');
-  console.log(event);
-  event.respondWith(fetch(event.request));
+  event.respondWith(
+    caches.open('colour-tools').then(function(cache) {
+      return cache.match(event.request).then(function (response) {
+        return response || fetch(event.request).then(function(response) {
+          cache.put(event.request, response.clone());
+          return response;
+        });
+      });
+    })
+  );
 });
