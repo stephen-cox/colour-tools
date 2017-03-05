@@ -32,6 +32,7 @@ const del = require('del');
 const plumber = require('gulp-plumber');
 const argv = require('yargs').default('production', false).argv;
 const watch = require('gulp-watch');
+const gulpif = require('gulp-if');
 
 // SASS
 const sass = require('gulp-sass');
@@ -152,24 +153,29 @@ gulp.task('clean-css', 'Delete all the CSS files in the ./web/css directory', ()
 
 /**
  * Transpile, minify and concatenate Javascript files in scripts directory,
- * creating separate files for everything in each sud directory
+ * creating separate files for everything in each sub directory.
+ * Service workers need to live in root, anything in sw dir goes there.
  */
 gulp.task('scripts', () => {
 
   const scriptsPath = 'scripts';
   const dirs = getDirs('scripts');
 
-  const tasks = dirs.map(function(dir) {
+  const is_sw = function(dir) {
+    return dir === 'sw';
+  }
+
+  const tasks = dirs.map((dir) => {
     return gulp.src(path.join('scripts', dir, '/**/*.js'))
       .pipe(plumber({
         errorHandler: onError,
       }))
       .pipe(babel({ presets: ['es2015'] }))
       .pipe(concat(dir + '.js'))
-      .pipe(gulp.dest('./web/js'))
+      .pipe(gulpif(is_sw(dir), gulp.dest('./web'), gulp.dest('./web/js')))
       .pipe(uglify())
       .pipe(rename(dir + '.min.js'))
-      .pipe(gulp.dest('./web/js'));
+      .pipe(gulpif(is_sw(dir), gulp.dest('./web'), gulp.dest('./web/js')))
    });
 
   const root = gulp.src('scripts/*.js')
@@ -187,10 +193,8 @@ gulp.task('scripts', () => {
     .pipe(bs.stream({ match: '**/*.js' }));
 });
 
-
-
 /**
- * Compress Images
+ * Compress images
  */
 gulp.task('images', 'Compress image in ./images directory', () => {
 

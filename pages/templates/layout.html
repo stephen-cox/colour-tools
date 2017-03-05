@@ -10,6 +10,11 @@
   <body>
     {% block content %}{% endblock %}
   </body>
+  <script>
+    if (navigator.serviceWorker) {
+      navigator.serviceWorker.register('js/sw.js', {scope: '/'});
+    }
+  </script>
   <script src="lib/jquery/dist/jquery.min.js"></script>
   <script src="lib/chroma-js/chroma.min.js"></script>
   <script src="js/scripts.js"></script>
