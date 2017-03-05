@@ -17,6 +17,7 @@
     "eslint-plugin-jsx-a11y": "^2.2.3",
     "eslint-plugin-react": "^6.8.0",
     "find-parent-dir": "*",
+    "fs": "0.0.1-security",
     "gulp": "*",
     "gulp-autoprefixer": "*",
     "gulp-babel": "^6.1.2",
@@ -36,6 +37,8 @@
     "gulp-uglify": "^2.0.0",
     "gulp-util": "*",
     "gulp-watch": "*",
+    "merge-stream": "^1.0.1",
+    "path": "^0.12.7",
     "yargs": "*"
   },
   "engines": {

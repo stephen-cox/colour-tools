@@ -41,6 +41,9 @@ const clean = require('gulp-clean-css');
 const globbing = require('gulp-css-globbing');
 
 // JavaScript
+const fs = require('fs');
+const path = require('path');
+const merge = require('merge-stream');
 const concat = require('gulp-concat');
 const babel = require('gulp-babel');
 const rename = require('gulp-rename');
@@ -76,6 +79,16 @@ function onError(err) {
   }
   this.emit('end');
 }
+
+/**
+ * Get sub directories in dir
+ */
+ function getDirs(dir) {
+   return fs.readdirSync(dir)
+     .filter(function(file) {
+       return fs.statSync(path.join(dir, file)).isDirectory();
+     });
+ }
 
 /**
  * Compile SASS for development environment
@@ -138,11 +151,28 @@ gulp.task('clean-css', 'Delete all the CSS files in the ./web/css directory', ()
 });
 
 /**
- * Transpile, minify and concatenate Javascript files
+ * Transpile, minify and concatenate Javascript files in scripts directory,
+ * creating separate files for everything in each sud directory
  */
 gulp.task('scripts', () => {
 
-  return gulp.src('scripts/**/*.js')
+  const scriptsPath = 'scripts';
+  const dirs = getDirs('scripts');
+
+  const tasks = dirs.map(function(dir) {
+    return gulp.src(path.join('scripts', dir, '/**/*.js'))
+      .pipe(plumber({
+        errorHandler: onError,
+      }))
+      .pipe(babel({ presets: ['es2015'] }))
+      .pipe(concat(dir + '.js'))
+      .pipe(gulp.dest('./web/js'))
+      .pipe(uglify())
+      .pipe(rename(dir + '.min.js'))
+      .pipe(gulp.dest('./web/js'));
+   });
+
+  const root = gulp.src('scripts/*.js')
     .pipe(plumber({
       errorHandler: onError,
     }))
@@ -151,9 +181,13 @@ gulp.task('scripts', () => {
     .pipe(gulp.dest('./web/js'))
     .pipe(rename('scripts.min.js'))
     .pipe(uglify())
-    .pipe(gulp.dest('./web/js'))
+    .pipe(gulp.dest('./web/js'));
+
+  return merge(tasks, root)
     .pipe(bs.stream({ match: '**/*.js' }));
 });
+
+
 
 /**
  * Compress Images
