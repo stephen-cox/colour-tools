@@ -12,18 +12,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
  * Colour palette tools
  */
 
-/**
- * Colour class
- */
-var Colour = function Colour() {
-  _classCallCheck(this, Colour);
-};
+/* global chroma */
 
 /**
  * ColourElement class
  */
-
-
 var ColourElement = function () {
   function ColourElement(selector) {
     _classCallCheck(this, ColourElement);
@@ -568,6 +561,291 @@ if ($('#colour-palette-tools').length > 0) {
     });
   });
 }
+'use strict';
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * Colour class
+ */
+var Colour = function () {
+
+  /**
+   * Colour class constructor
+   *
+   * Create a Colour class object with the colour determined by the number of args
+   *  - no args an empty colour is created
+   *  - 1 arg supplied, colour assumed to be a string hex code
+   *  - 3 args supplied, a guess is made to determine whether RGB or HSL
+   *  - a 4th arg of 'rgb' or 'hsl' can be supplied
+   */
+  function Colour() {
+    _classCallCheck(this, Colour);
+
+    // HSL colour values
+    this._h = 0;
+    this._s = 0;
+    this._l = 0;
+
+    // RGB colour values
+    this._r = 0;
+    this._g = 0;
+    this._b = 0;
+
+    // Hex colour value
+    this._hex = '000000';
+
+    // Check args
+
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    if (args.length === 0) {} else if (args.length === 1) {
+      this.hex = args[0];
+    } else if (args.length === 4 && args[3] === 'rgb') {
+      this.rgb = args;
+    } else if (args.length === 4 && args[3] === 'hsl') {
+      this.hsl = args;
+    } else if (args.length === 3 && this.is_rgb(args[0]) && this.is_rgb(args[1]) && this.is_rgb(args[2])) {
+      this.rgb = args;
+    } else if (args.length === 3 && this.is_hue(args[0]) && this.is_saturation(args[1]) && this.is_luminosity(args[0])) {
+      this.hsl = args;
+    } else {
+      TypeError('Unable to determine colour type');
+    }
+  }
+
+  /**
+   * Get HSL value array
+   */
+
+
+  _createClass(Colour, [{
+    key: 'hsl',
+    get: function get() {
+      return [this.hue, this.saturation, this.luminosity];
+    }
+
+    /**
+     * Set value from HSL
+     */
+    ,
+    set: function set(value) {
+      var h = value[0];
+      var s = value[1];
+      var l = value[2];
+
+      // Check hue
+      if (h >= 0 && h <= 360) {
+        this._h = h;
+      } else {
+        RangeError('HSL hue value out of range');
+      }
+
+      // Check saturation
+      if (s >= 0 && s <= 1) {
+        this._s = s;
+      } else {
+        RangeError('HSL saturation value out of range');
+      }
+
+      // Check luminosity
+      if (l >= 0 && l <= 1) {
+        this._l = l;
+      } else {
+        RangeError('HSL luminosity value out of range');
+      }
+
+      // Set RGB from HSL
+      var r = void 0;
+      var g = void 0;
+      var b = void 0;
+
+      if (s === 0) {
+        this._r = this._g = this._b = 255 * l;
+      } else {
+        var hue2rgb = function hue2rgb(p, q, t) {
+          if (t < 0) t += 1;
+          if (t > 1) t -= 1;
+          if (t < 1 / 6) return p + (q - p) * 6 * t;
+          if (t < 1 / 2) return q;
+          if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+          return p;
+        };
+      }
+    }
+
+    /**
+     * Get HSL hue value
+     */
+
+  }, {
+    key: 'hue',
+    get: function get() {
+      return this._h;
+    }
+
+    /**
+     * Set HSL hue value
+     */
+    ,
+    set: function set(h) {
+      this.hsl = [h, this._s, this._l];
+    }
+
+    /**
+     * Get HSL saturation value
+     */
+
+  }, {
+    key: 'saturation',
+    get: function get() {
+      return this._s;
+    }
+
+    /**
+     * Set HSL saturation value
+     */
+    ,
+    set: function set(s) {
+      this.hsl = [this._h, s, this._l];
+    }
+
+    /**
+     * Get HSL luminosity value
+     */
+
+  }, {
+    key: 'luminosity',
+    get: function get() {
+      return this._l;
+    }
+
+    /**
+     * Set HSL luminosity value
+     */
+    ,
+    set: function set(l) {
+      this.hsl = [this._h, this._s, l];
+    }
+
+    /**
+     * Get RGB value array
+     */
+
+  }, {
+    key: 'rgb',
+    get: function get() {
+      return [this.red, this.green, this.blue];
+    }
+
+    /**
+     * Set value from RGB
+     */
+    ,
+    set: function set(value) {
+      var r = value[0];
+      var g = value[1];
+      var b = value[2];
+
+      // Check red
+      if (r === parseInt(r) && r <= 0 && r <= 255) {
+        this._r = r;
+      } else {
+        RangeError('RGB red value out of range');
+      }
+
+      // Check green
+      if (g === parseInt(g) && g <= 0 && g <= 255) {
+        this._g = g;
+      } else {
+        RangeError('RGB green value out of range');
+      }
+
+      // Check blue
+      if (b === parseInt(b) && b <= 0 && b <= 255) {
+        this._b = b;
+      } else {
+        RangeError('RGB blue value out of range');
+      }
+
+      // Set HSL from RGB
+    }
+
+    /**
+     * Get RGB red value
+     */
+
+  }, {
+    key: 'red',
+    get: function get() {
+      return this._r;
+    }
+
+    /**
+     * Set RGB red value
+     */
+    ,
+    set: function set(r) {
+      this.rgb = [r, this._g, this._b];
+    }
+
+    /**
+     * Get RGB green value
+     */
+
+  }, {
+    key: 'green',
+    get: function get() {
+      return this._g;
+    }
+
+    /**
+     * Set RGB green value
+     */
+    ,
+    set: function set(g) {
+      this.rgb = [this._r, g, this._b];
+    }
+
+    /**
+     * Get RGB blue value
+     */
+
+  }, {
+    key: 'blue',
+    get: function get() {
+      return this._b;
+    }
+
+    /**
+     * Set RGB blue value
+     */
+    ,
+    set: function set(b) {
+      this.rgb = [this._r, this._g, b];
+    }
+
+    /**
+     * Get HTML hex value
+     */
+
+  }, {
+    key: 'hex',
+    get: function get() {}
+
+    /**
+     * Set value from HTML hex
+     */
+    ,
+    set: function set(value) {}
+  }]);
+
+  return Colour;
+}();
 'use strict';
 
 /*
